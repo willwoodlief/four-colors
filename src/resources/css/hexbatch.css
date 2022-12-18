@@ -64,3 +64,10 @@ div.hexbatch div.spoiler {
     padding: 0.5em;
     width:20em;   
 }
+
+.afterthought .version {
+    font-size: small;
+    display: inline-block;
+    color: white;
+    margin-left: 1rem;
+}
