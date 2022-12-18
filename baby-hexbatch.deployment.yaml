@@ -26,6 +26,6 @@ spec:
     spec:
       containers:
       - name: baby-hexbatch
-        image: registry.digitalocean.com/will-k8s/baby-hex
+        image: <IMAGE>
         ports:
         - containerPort: 80
