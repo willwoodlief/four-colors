@@ -2,9 +2,9 @@ FROM dragas/thttpd:latest
 
 RUN apk update
 RUN apk add git
-
-RUN git clone https://github.com/willwoodlief/baby-hex-momma.git /var/www/http
-
+RUN mkdir -p /app/repo
+RUN git clone https://github.com/willwoodlief/baby-hex-momma.git  /app/repo
+RUN mv /app/repo/src/* /var/www/http
 WORKDIR /var/www/http
 
 EXPOSE 80
