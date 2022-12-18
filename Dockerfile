@@ -3,7 +3,8 @@ FROM dragas/thttpd:latest
 RUN apk update
 RUN apk add git
 RUN mkdir -p /app/repo
-RUN git clone https://github.com/willwoodlief/baby-hex-momma.git  /app/repo
+ARG GIT_BRANCH=master
+RUN git clone --branch "$GIT_BRANCH" https://github.com/willwoodlief/four-colors.git  /app/repo
 RUN mv /app/repo/src/* /var/www/http
 WORKDIR /var/www/http
 
