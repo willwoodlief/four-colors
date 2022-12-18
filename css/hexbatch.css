@@ -1,0 +1,66 @@
+body {
+
+    margin: auto;
+}
+
+div.hex-parent {
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
+  position: relative;
+  font-size: 1em;
+}
+
+div.hexbatch {
+    width: 12em;
+    height: 12em;
+    padding: 1em;
+    right: -1em;
+    position: relative;
+    font-size: calc(2.0em + 1vh);
+}
+
+div.hexbatch div.spoiler {
+    padding-top: 1em;
+    /*background-color: skyblue;*/
+    width: fit-content;
+    text-align: center;
+}
+
+.hexagon {
+    position: relative;
+    width: 10em;
+    height: 5.8em;
+    background-color: #bcf2f5;
+    margin: 2.5em 0;
+}
+
+.hexagon:before,
+.hexagon:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    border-left: 5em solid transparent;
+    border-right: 5em solid transparent;
+}
+
+.hexagon:before {
+    bottom: 100%;
+    border-bottom: 2.5em solid #bcf2f5;
+}
+
+.hexagon:after {
+    top: 100%;
+    width: 0;
+    border-top: 2.5em solid #bcf2f5;
+}
+
+.afterthought {
+    margin: auto;
+    text-align: center;
+    margin-bottom: 3em;
+    background-color: pink;
+    border-radius: 1em; 
+    padding: 0.5em;
+    width:20em;   
+}
