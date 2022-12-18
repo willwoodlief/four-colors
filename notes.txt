@@ -1,0 +1,37 @@
+docker build --no-cache -t baby-hex .
+docker run -p 8080:80 baby-hex
+docker tag baby-hex registry.digitalocean.com/will-k8s/baby-hex
+docker push registry.digitalocean.com/will-k8s/baby-hex
+k create -f baby-hex.deployment.yaml
+
+
+--------------
+
+h repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+h repo update
+h install nginx-ingress ingress-nginx/ingress-nginx --set controller.publishService.enabled=true
+
+k --namespace default get services -o wide -w nginx-ingress-ingress-nginx-controller
+
+k apply -f hello-kubernetes-ingress.yaml
+
+
+k create namespace cert-manager
+h repo add jetstack https://charts.jetstack.io
+h repo update
+h install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.10.1 --set installCRDs=true
+k apply -f production_issuer.yaml
+k apply -f hello-kubernetes-ingress.yaml
+
+
+------------
+
+avoid downtimes https://medium.com/codecademy-engineering/kubernetes-nginx-and-zero-downtime-in-production-2c910c6a5ed8
+wild card certs https://docs.digitalocean.com/tutorials/doks-nginx-wildcard/
+
+how todo some other helm commands here https://www.digitalocean.com/community/tutorials/how-to-install-software-on-kubernetes-clusters-with-the-helm-3-package-manager#step-1-installing-helm-3
+
+lamp https://artifacthub.io/packages/helm/lamp/
+
+
+ see https://docs.digitalocean.com/products/kubernetes/how-to/deploy-using-github-actions/ 

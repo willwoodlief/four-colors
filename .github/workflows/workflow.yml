@@ -11,9 +11,8 @@ on:
     branches:
       - master
     paths:
-      - '**.js'
-      - '**.css'
-      - '**.html'
+      - 'src/**'
+      - 'config/**'
       - 'Dockerfile'
       - '.github/workflows/**'
 
@@ -49,14 +48,14 @@ jobs:
 
     # Deploy to DigitalOCcean Kubernetes.
     - name: Update deployment file
-      run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/will-k8s/baby-hex:'${TAG}'|' $GITHUB_WORKSPACE/baby-hexbatch.deployment.yaml
+      run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/will-k8s/baby-hex:'${TAG}'|' $GITHUB_WORKSPACE/config/baby-hexbatch.deployment.yaml
 
     - name: Save DigitalOcean kubeconfig with short-lived credentials
       run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 k8s-will-hexbatch
   
 
     - name: Deploy to DigitalOcean Kubernetes
-      run: kubectl apply -f $GITHUB_WORKSPACE/baby-hexbatch.deployment.yaml
+      run: kubectl apply -f $GITHUB_WORKSPACE/config/baby-hexbatch.deployment.yaml
 
     - name: Verify deployment
       run: kubectl rollout status deployment/baby-hexbatch

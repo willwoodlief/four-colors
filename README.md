@@ -1,8 +1,12 @@
-Basic Static Site Template
+# Basic Static Site Template
 
-        docker build --no-cache -t baby-hex .
-        docker tag baby-hex registry.digitalocean.com/will-k8s/baby-hex
-        docker push registry.digitalocean.com/will-k8s/baby-hex
-        k create -f baby-hex.deployment.yaml
+Runs on D.O. just put in any static content to src and adjust deployment and workflow
 
- see https://docs.digitalocean.com/products/kubernetes/how-to/deploy-using-github-actions/       
+-------------------
+
+Secrets needed:
+
+* REGISTRY_NAME
+* DIGITALOCEAN_ACCESS_TOKEN
+
+
