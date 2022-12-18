@@ -1,8 +1,8 @@
-docker build --no-cache -t baby-hex .
-docker run -p 8080:80 baby-hex
-docker tag baby-hex registry.digitalocean.com/will-k8s/baby-hex
-docker push registry.digitalocean.com/will-k8s/baby-hex
-k create -f baby-hex.deployment.yaml
+docker build --no-cache -t four-colors-test .
+docker run -p 8080:80 four-colors-test
+docker tag four-colors registry.digitalocean.com/will-k8s/four-colors
+docker push registry.digitalocean.com/will-k8s/four-colors
+k apply -f config/four-colors.deployment.yaml
 
 
 --------------
