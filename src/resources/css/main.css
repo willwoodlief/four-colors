@@ -1,0 +1,21 @@
+header {
+    background-color: white;
+    margin-right: 0.5rem;
+}
+
+header .onedot-top-panel .onedot-label {
+    width: 5em;
+}
+
+header .onedot-top-panel div#onedot-collection {
+
+    height: 10rem;
+    overflow-y: hidden;
+    overflow-x: auto;
+    background-color: gainsboro;
+    border: 1px solid gray;
+}
+
+section#onedot-playpen {
+    margin-top: 0.5rem;
+}
