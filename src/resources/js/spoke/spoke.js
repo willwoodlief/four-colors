@@ -1,11 +1,19 @@
+// @ts-check
+"use strict";
+
 class SpokeMap {
+
+    /**
+     * @type {Object<string, SpokeMember|SpokeHarmony|SpokeDot>} book 
+     */
+    book;
     constructor() {
         this.book = {};
     }
     /**
      * 
      * @param {string} uuid 
-     * @returns {object}
+     * @returns {?SpokeHarmony|?SpokeDot|?SpokeMember}
      */
     getObject(uuid) {
         return this.book[uuid]??null;
@@ -14,7 +22,7 @@ class SpokeMap {
     /**
      * 
      * @param {string} uuid 
-     * @param {object} obj 
+     * @param {SpokeMember|SpokeHarmony|SpokeDot} obj 
      */
     addObject(uuid,obj) {
         this.book[uuid] = obj;
@@ -31,51 +39,103 @@ class SpokeMaster {
       }
 }
 
+class SpokeMember {
+    /**
+     * @type {string} guid 
+     */
+    guid; 
 
-class SpokeDot {
-    guid; value;parent_guid;
+     /**
+     * @type {string[]} parent_guids 
+     */
+    parent_guids;
+
+    /**
+     * @param {?string} [parent_guid]
+     */
+    constructor(parent_guid) {
+        this.guid = crypto.randomUUID();
+       
+    
+        this.parent_guids = [];
+        if (parent_guid) {
+            this.parent_guids.push(parent_guid);
+        } 
+
+        SpokeMaster.master.book.addObject(this.guid,this);
+    }
+
+    /**
+     * @param {string} parent_guid
+     * @return {void}
+     */
+    add_parent(parent_guid) {
+        if (parent_guid && !this.parent_guids.includes(parent_guid)) {
+            this.parent_guids.push(parent_guid);
+        } 
+    }
+
+    
+    /**
+     * @param {string} parent_guid
+     * @return {void}
+     */
+    remove_parent(parent_guid) {
+        let index = this.parent_guids.indexOf(parent_guid);
+        if (index !== -1) {
+            this.parent_guids.splice(index, 1);
+        }
+    }
+
+
+}
+
+
+class SpokeDot extends SpokeMember{
+    /**
+     * @type {number} value 
+     */
+    value;
+
     /**
      * @param {number} value 
+     * @param {?string} [parent_guid]
      */
-    constructor(value) {
-        this.parent_guid = null;
-        this.guid = crypto.randomUUID();
+    constructor(value,parent_guid) {
+        super(parent_guid);
         this.value = parseInt(value.toString());
-        SpokeMaster.master.book.addObject(this.guid,this);
     }
 }
 
-class SpokeHarmony {
-    guid;
+class SpokeHarmony extends SpokeMember {
+    
+     /**
+     * @type {string[]} parent_guids 
+     */
     members;
-    parent_guid;
+    
     /**
      * @param {string[]} members 
      * @param {?string} parent_guid
      */
     constructor(members,parent_guid) {
-        this.guid = crypto.randomUUID();
-       
+        super(parent_guid);
+
         /**
          * @type {string[]}
          */
         this.members = [];
         if (members.length) {this.members = members;}
-        this.parent_guid = parent_guid;
-
-        SpokeMaster.master.book.addObject(this.guid,this);
-
-      
     }
 
     /**
      * @return {number}
      */
     get value() {
-        return SpokeHarmony.#get_value(this.members);
+        return SpokeHarmony.#get_value(this.members,this.guid);
     }
 
-
+   
 
     /**
      * 
@@ -84,7 +144,8 @@ class SpokeHarmony {
      * @returns {string[][]}
      */
      static #subset_combination_keep(arr,keep) {
-        const f = (A, i=0) => i == A.length ? [[]] : f(A, i+1).flatMap(x => [x, [A[i]].concat(x)]);
+        const f = (/** @type {string | any[]} */ A, i=0) =>
+             i == A.length ? [[]] : f(A, i+1).flatMap((/** @type {any} */ x) => [x, [A[i]].concat(x)]);
         let answer = [];
         let all = f(arr);
         for(let i=1; i < all.length; i++) {
@@ -108,7 +169,7 @@ class SpokeHarmony {
        
         let min_val = 1000000;
         let ret = [];
-        let focus_val = SpokeHarmony.#get_value([focus]);
+        let focus_val = SpokeHarmony.#get_value([focus],context);
         for(let i = 0; i < combos.length; i++) {
             let da_combo = combos[i];
             let val = SpokeHarmony.#get_value(da_combo,context);
@@ -130,16 +191,29 @@ class SpokeHarmony {
      * @return {number}
      */
     static #get_value(arr,context) {
+
+        /**
+         * 
+         * @param {string[]} parent_list 
+         * @param {string} context 
+         * @return {SpokeHarmony[]}
+         * finds the chain of harmonies from the list of parents to the context
+         */
+        function get_context_path(parent_list,context) {
+
+
+        }
+        
         let val = 0;
         for(let i = 0; i < arr.length; i++) {
             let obj = SpokeMaster.master.book.getObject(arr[i]);
             if (obj instanceof SpokeDot) {
                 let context_value = 0;
-                if (obj.parent && obj.parent !== context) {
-                    let parent_guid = obj.parent;
+                if (obj.parent_guids.length && !obj.parent_guids.includes(context ) ) {
+                    let parent_guids = obj.parent;
                     let b_in_context = false;
-                    while(parent_guid) {
-                        let parent_obj = SpokeMaster.master.book.getObject(parent_guid);
+                    while(parent_guids) {
+                        let parent_obj = SpokeMaster.master.book.getObject(parent_guids);
                         if (parent_obj instanceof SpokeHarmony) {
                             context_value += parent_obj.value;
                             if (parent_obj.parent === context) {
@@ -159,20 +233,29 @@ class SpokeHarmony {
         }
         
         return val;
+
+        /*
+        however, when getting the charge of a parent harmony, to calc the charge of combination,
+            I think one or all of them are used at the same time? (I think its all)
+            if its all, then all the parent hamonies must still be in the same context 
+            */
     }
 
+     /**
+     * @param {string[]} its_members
+     */
      #maybe_create_add_harmony(its_members) {
         if (!its_members || its_members.length === 0) {return;}
         if (its_members.length === this.members.length) {return;} //its in general pop
         let nu = new SpokeHarmony(its_members,this.guid);
-        this.members.push(nu.id);
+        this.members.push(nu.guid);
      }
 
      #splash() {
         let ret = [];
         /*
         todo: return array of all the top dots and  top harmony members
-        remove all the private members and getters and setters except the harmony value
+        randomize the array
         */
        return ret;
      }
@@ -183,13 +266,13 @@ class SpokeHarmony {
        for(let i = 0; i < water.length; i++) {
          let thing = water[i];
          this.members.push(thing);
-         let best_set = SpokeHarmony.#find_best_set(this.members,guid,this.guid);
+         let best_set = SpokeHarmony.#find_best_set(this.members,thing,this.guid);
          this.#maybe_create_add_harmony(best_set)
        }
      }
 
      remove(guid) {
-        if (!this.members.has(guid)) {
+        if (!this.members.includes(guid)) {
             throw new Error(this.guid + " not a member of " + guid);
         }
         let index = this.members.indexOf(guid);
@@ -206,11 +289,11 @@ class SpokeHarmony {
     add(guid) {
         let n = SpokeMaster.master.book.getObject(guid);
         if (!n) {throw new Error("Not object: " + guid);}
-        if (this.members.has(guid)) {
+        if (this.members.includes(guid) || n.parent_guids.includes(this.guid)) {
             throw new Error(this.guid + " already has member of " + guid);
         }
         if (n instanceof SpokeDot || n instanceof SpokeHarmony) {
-            n.parent(this.guid);
+            n.add_parent(this.guid);
         } else {
             throw new Error(`the guid ${guid} is incorrect object when added to ${this.guid}`);
         }
@@ -221,16 +304,19 @@ class SpokeHarmony {
 
         /*
         todo:
-          dots and harmonies can belong in multiple harmonies, so parents is an array
-          however, when getting the charge of a parent harmony, to calc the charge of combination,
-            I think one or all of them are used at the same time? (I think its all)
-            if its all, then all the parent hamonies must still be in the same context 
+          if any current member includes a parent of nested member, pick random one of those and this to add
+          
         */
     }
 }
 
 class SpokeSimpleDraw {
+    /**
+     * @param {string} guid
+     * @param {object} el
+     */
     static draw(guid,el) {
+        console.debug(guid,el);
         /*
         todo
         if el empty, make a top element
