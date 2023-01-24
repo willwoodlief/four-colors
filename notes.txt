@@ -35,3 +35,9 @@ lamp https://artifacthub.io/packages/helm/lamp/
 
 
  see https://docs.digitalocean.com/products/kubernetes/how-to/deploy-using-github-actions/ 
+
+
+npm i tree-util
+https://browserify.org/
+  browserify  node_modules/tree-util/index.js -o src/resources/js/tree-util.js
+

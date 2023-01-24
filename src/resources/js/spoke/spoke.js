@@ -194,16 +194,109 @@ class SpokeHarmony extends SpokeMember {
 
         /**
          * 
-         * @param {string[]} parent_list 
-         * @param {string} context 
+         * @param {string} target_guid 
+         * @param {string} context_guid 
          * @return {SpokeHarmony[]}
-         * finds the chain of harmonies from the list of parents to the context
+         * each parent has 0 or more ancestors that may or may not lead back to this context
+         * each ancestor might have 0 or more ancestors that lead back to this context
+         * ancestors might be duplicated (ancestor chains might cross)
+         * we want all the distinct child harmonies, along with the harmony passed in, that have an ancestor of this context
+         * the ordering does not matter
          */
-        function get_context_path(parent_list,context) {
+        function get_included_harmonies(target_guid,context_guid) {
 
+            /**
+             * builds a collection of this object and all parents and ancestors  
+             * 
+             * @param {string} some_guid
+             * @return {Object<string,SpokeHarmony>} 
+             */
+            function find_all_ancestors(some_guid) {
+                if (!some_guid ) {return {};}
+            
+                let some_obj = SpokeMaster.master.book.getObject(some_guid);
+                if (!(some_obj instanceof SpokeHarmony)) {return {};}
+                if (!some_obj?.parent_guids?.length) {return {};}
 
+                /**
+                 * @type {Object<string,SpokeHarmony>} ret;
+                 */
+                let ret = {};
+                ret[some_obj.guid] = some_obj;
+                for(let i = 0; i < some_obj.parent_guids.length; i++) {
+                    let working_guid = some_obj.parent_guids[i];
+                    if (working_guid in ret) { continue;}
+                    let maybe_paths = find_all_ancestors(working_guid) ;
+                    Object.assign(ret,maybe_paths);
+                }
+                return ret;
+                
+            }
+
+            let ans = find_all_ancestors(target_guid) ;
+            let items = [];
+            let context_obj = SpokeMaster.master.book.getObject(context_guid);
+            if (!(context_obj instanceof SpokeHarmony)) {return [];}
+            else
+            {
+                let item = {
+                    guid: context_guid,
+                    harmony : context_obj
+                };
+                items.push(item);
+            }
+            
+            for(let guid in ans) {
+                let h = ans[guid];
+                for(let pi = 0; pi < h.parent_guids.length; pi++ ) {
+                    let item = {
+                        guid: guid,
+                        parent_guid: h.parent_guids[pi],
+                        harmony : h
+                    };
+                    items.push(item);
+                }
+            }   
+
+            // Config object to set the id properties for the parent child relation
+            let standardConfig =  { id : 'guid', parentid : 'parent_guid'};
+
+            // Creates an array of trees. For this example there will by only one tree
+            // @ts-ignore
+            let trees = buildTrees(items, standardConfig);
+            let context_node = null;
+            for(let t = 0; t < trees.length; t++) {
+                let some_tree = trees[t];
+                let leaf_node = some_tree.getNodeById(context_guid);
+                if (leaf_node) {
+                    context_node = leaf_node;
+                    break;
+                }
+            }
+
+            if (!context_node) {return [];}
+
+            let what = leafNode.getDescendants();
+            let ret = [];
+            for(let i = 0; i < what.length; i++) {
+                let harmony = what[i].dataObj.harmony;
+                ret.push(harmony);
+            }
+            //add in the context obj if not already in there
+            let b_found_context = false;
+            for(let i = 0; i < ret.length; i++) {
+                if (ret[i].guid === context_guid) {
+                    b_found_context = true;
+                    break;
+                }
+            }
+            if (!b_found_context) {
+                ret.unshift(context_obj);
+            }
+            return ret;
         }
-        
+        //todo use the hopefully complete get_included_harmonies in the below
+
         let val = 0;
         for(let i = 0; i < arr.length; i++) {
             let obj = SpokeMaster.master.book.getObject(arr[i]);
@@ -304,7 +397,11 @@ class SpokeHarmony extends SpokeMember {
 
         /*
         todo:
-          if any current member includes a parent of nested member, pick random one of those and this to add
+          if any current member includes a parent of nested member,
+           pick N random ones
+          from chain of those (can get nested) and of this, 
+          Then from that N, add to the one with greatest charge absorbsion 
+        
           
         */
     }
