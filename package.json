@@ -1,0 +1,24 @@
+{
+  "name": "spokes",
+  "version": "1.0.0",
+  "description": "Stuff",
+  "main": "index.html",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/willwoodlief/four-colors.git"
+  },
+  "keywords": [
+    "stuff"
+  ],
+  "author": "Will Woodlief",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/willwoodlief/four-colors/issues"
+  },
+  "homepage": "https://github.com/willwoodlief/four-colors#readme"
+}
