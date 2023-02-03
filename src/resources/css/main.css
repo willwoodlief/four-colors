@@ -20,3 +20,39 @@ header .onedot-top-panel div#onedot-collection {
 section#onedot-playpen {
     margin-top: 0.5rem;
 }
+
+section#onedot-playpen div#spoke-area {
+    min-height: 10rem;
+    background-color: yellowgreen;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spoke-simple-draw-area {
+    padding: 1rem;
+    background-color: rgb(230, 253, 196);
+    padding: 1rem;
+    width: fit-content;
+    height: fit-content;
+    border: 1px solid forestgreen;
+}
+
+.spoke-simple-draw-area .spoke-simple-draw-harmony {
+    padding: 0.25rem;
+    color: skyblue;
+    padding: 0.5rem;
+    border: 1px blue dashed;
+
+}
+
+.spoke-simple-draw-area .spoke-simple-draw-harmony .spoke-simple-draw-dot {
+    width: fit-content;
+    color: white;
+    background-color: black;
+    text-align: center;
+    line-height: 0.9;
+    padding: 0.1rem;
+    display: inline-block;
+    margin: 0.12rem;
+}
