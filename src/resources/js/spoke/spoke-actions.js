@@ -38,7 +38,15 @@ class SpokeActions {
         if (!(future_parent instanceof SpokeHarmony)) {
             return;
         }else {
-            future_parent.add(member.guid);
+            if (future_parent.parent_guids.length === 0 && (member instanceof SpokeHarmony)) {
+                for (const member_guid of member.members) {
+                    let thing = SpokeMaster.master.book.getObject(member_guid);
+                    future_parent.add_member(thing.guid);
+                }
+            } else {
+                future_parent.add(member.guid);
+            }
+            
         }
     }
 

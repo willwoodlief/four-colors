@@ -328,28 +328,33 @@ class SpokeHarmony extends SpokeMember {
      */
     static #get_included_harmonies(target_guid,context_guid) {
 
-        
+        //todo I am pretty sure this allows cyclable relationships, if so need to figure out how to find such things
         if (!target_guid) {return [];}
-        let ans = SpokeHarmony.#find_all_ancestors(target_guid) ;
         let items = [];
         let remembered_guid_in_items = [];
-        let context_obj = SpokeMaster.master.book.getObject(context_guid);
-        if (!(context_obj instanceof SpokeHarmony)) {return [];}
-        else
-        {
-            let item = {
-                guid: context_guid,
-                harmony : context_obj
-            };
-            items.push(item);
-            remembered_guid_in_items.push(context_guid);
+
+        function add_guid_to_items(some_guid) {
+            let ans = SpokeHarmony.#find_all_ancestors(some_guid) ;
+        
+            let some_obj = SpokeMaster.master.book.getObject(some_guid);
+            if (some_obj instanceof SpokeHarmony) {
+                let item = {
+                    guid: some_guid,
+                    harmony : some_obj
+                };
+                items.push(item);
+                remembered_guid_in_items.push(some_guid);
+            }
+
+            push_tree_item(ans);
         }
+        
 
         /**
          * @param {Object<string,SpokeHarmony> } wans 
          */
         function push_tree_item(wans) {
-            for(let guid in ans) {
+            for(let guid in wans) {
                 let h = wans[guid]??null;
                 if (!h) {continue;}
                 for(let pi = 0; pi < h.parent_guids.length; pi++ ) {
@@ -366,10 +371,21 @@ class SpokeHarmony extends SpokeMember {
                         push_tree_item(memories);
                     }//end if not included before
                 }// end for each parent of each ancestor 
+                if (h.parent_guids.length === 0) {
+                    if (!remembered_guid_in_items.includes(guid)) {
+                        let item = {
+                            guid: guid,
+                            harmony : h
+                        };
+                        items.push(item);
+                        remembered_guid_in_items.push(guid);
+                    }
+                }
             } //end for each ancestor   
         } //end function
         
-        push_tree_item(ans);
+        add_guid_to_items(context_guid);
+        add_guid_to_items(target_guid);
        
 
         // Config object to set the id properties for the parent child relation
