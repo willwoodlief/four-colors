@@ -12,6 +12,7 @@
         <meta name="author" content="Will Woodlief">
 
         <link rel="stylesheet" href="resources/css/main.css">
+        <link rel="stylesheet" href="resources/js/holder/holder.css">
 
         <link rel="shortcut icon" type="image/png" href="resources/images/favicon-16x16.png"/>
 
@@ -30,7 +31,7 @@
     <body>
         <header>
            <div class="row onedot-top-panel">
-                <div class="col-12 col-sm-12 col-md-6 col-xl-2">
+                <div class="col-12 col-sm-12 col-md-4 col-xl-2">
                     <div class="btn-toolbar ms-1" role="toolbar" aria-label="Controls for playpen">
                         <div class="input-group">
                             
@@ -61,8 +62,8 @@
                         </div> <!-- /input-group -->
                     </div><!-- /.btn-toolbar -->
                 </div> <!-- /.col -->
-                <div class="col-12 col-sm-12 col-md-6 col-xl-10">
-                    <div id="onedot-collection"></div>
+                <div class="col-12 col-sm-12 col-md-8 col-xl-10">
+                    <textarea id="onedot-collection" class="form-control"></textarea>
                 </div> <!-- /.col -->
            </div> <!-- /.row -->
         </header>
@@ -70,7 +71,7 @@
             <div class="container-xxl">
                 <div class="row">
                     <div class="col-12 col-sm-11">
-                        <div  id="spoke-area">
+                        <div  id="spoke-area" class="spoke-display-area">
 
                         </div>
                     </div> <!-- /.col -->
@@ -78,12 +79,61 @@
                     <div class="col-12 col-sm-1">
                         <div class="btn-group-vertical" role="group" aria-label="Play ground controls">
                             <button type="button" class="btn btn-success" id="onedot-playground-run-action">Redraw</button>
-                            <button type="button" class="btn btn-light" id="onedot-playground-save-action">Save</button>
                             <button type="button" class="btn btn-danger" id="onedot-playground-clear-action">Clear</button>
                           </div>
                     </div> <!-- /.col -->
                 </div> <!-- /.row -->
-            </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-warning " id="spoke-remove-action">Remove</button>
+                            <button type="button" class="btn btn-success" id="spoke-add-action">Add To (B)</button>
+                            <button type="button" class="btn btn-warning" id="spoke-export-action">Export</button>
+                            <button type="button" class="btn btn-warning"  id="spoke-import-action">Import</button>
+                        </div>
+                    </div> <!-- /.col -->
+                </div>  <!-- /.row -->
+                <div class="row mt-1">
+                    <div class="col-4">
+                        <div class="card text-bg-dark spoke-arg-holder" id="spoke-arg-a" data-holder_arg="a">
+                            <div class="card-header">
+                                A
+                                <span class="arg-guid"></span>
+                            </div>
+                            <div class="card-body arg-unit">
+                                <div class="arg-value"></div>
+                                <div class="arg-display spoke-display-area"></div>
+                            </div>
+                        </div> <!-- /.card -->
+                    </div> <!-- /.col -->
+
+                    <div class="col-4">
+                        <div class="card text-bg-success spoke-arg-holder" id="spoke-arg-b"  data-holder_arg="b">
+                            <div class="card-header">
+                                B
+                                <span class="arg-guid text-white"></span>
+                            </div>
+                            <div class="card-body arg-unit">
+                                <div class="arg-value"></div>
+                                <div class="arg-display spoke-display-area"></div>
+                            </div>
+                        </div> <!-- /.card -->
+                    </div> <!-- /.col -->
+
+                    <div class="col-4">
+                        <div class="card text-bg-light spoke-arg-holder" id="spoke-arg-c" data-holder_arg="c">
+                            <div class="card-header">
+                                C
+                                <span class="arg-guid"></span>
+                            </div>
+                            <div class="card-body arg-unit">
+                                <div class="arg-value"></div>
+                                <div class="arg-display spoke-display-area"></div>
+                            </div>
+                        </div> <!-- /.card -->
+                    </div> <!-- /.col -->
+                </div> <!-- /.row -->
+            </div> <!-- /.container -->
             
         </section>
         
@@ -93,6 +143,8 @@
                 crossorigin="anonymous"></script>
         <script src="resources/js/tree/tree-util.js" ></script>
         <script src="resources/js/spoke/spoke.js" ></script>
+        <script src="resources/js/spoke/spoke-actions.js" ></script>
+        <script src="resources/js/holder/holder.js" ></script>
         <script src="resources/js/start.js" ></script>
     
         <script>

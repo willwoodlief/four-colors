@@ -1,3 +1,7 @@
+:root {
+    --dots-bg-spoke-display-area: rgb(230, 253, 196);
+  }
+
 header {
     background-color: white;
     margin-right: 0.5rem;
@@ -8,21 +12,26 @@ header .onedot-top-panel .onedot-label {
     width: 5em;
 }
 
-header .onedot-top-panel div#onedot-collection {
+header .onedot-top-panel textarea#onedot-collection {
 
     height: 10rem;
-    overflow-y: hidden;
+    overflow-y: auto;
     overflow-x: auto;
     background-color: gainsboro;
     border: 1px solid gray;
+    white-space: pre-wrap;
+    font-size: small;
 }
 
 section#onedot-playpen {
     margin-top: 0.5rem;
 }
 
-section#onedot-playpen div#spoke-area {
+section#onedot-playpen div#spoke-area.spoke-display-area {
     min-height: 10rem;
+}
+
+div.spoke-display-area {
     background-color: yellowgreen;
     display: flex;
     align-items: center;
@@ -31,7 +40,7 @@ section#onedot-playpen div#spoke-area {
 
 .spoke-simple-draw-area {
     padding: 1rem;
-    background-color: rgb(230, 253, 196);
+    background-color: var(--dots-bg-spoke-display-area);
     padding: 1rem;
     width: fit-content;
     height: fit-content;
@@ -46,7 +55,7 @@ section#onedot-playpen div#spoke-area {
 
 }
 
-.spoke-simple-draw-area .spoke-simple-draw-harmony .spoke-simple-draw-dot {
+.spoke-simple-draw-area  .spoke-simple-draw-dot {
     width: fit-content;
     color: white;
     background-color: black;
@@ -56,3 +65,6 @@ section#onedot-playpen div#spoke-area {
     display: inline-block;
     margin: 0.12rem;
 }
+
+
+
