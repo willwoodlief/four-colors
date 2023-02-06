@@ -75,6 +75,11 @@ class SpokeMember {
     parent_guids;
 
     /**
+     * @type {number} value 
+     */
+    dot_value;
+
+    /**
      * @param {?string} [parent_guid]
      * @param {?string} [premade_own_guid]
      */
@@ -85,7 +90,7 @@ class SpokeMember {
             this.guid = crypto.randomUUID();
         }
         
-       
+       this.dot_value = 0;
     
         this.parent_guids = [];
         if (parent_guid) {
@@ -100,7 +105,7 @@ class SpokeMember {
      * @return {number}
      */
      get value() {
-        return 0;
+        return this.dot_value;
     }
 
 
@@ -108,10 +113,7 @@ class SpokeMember {
 
 
 class SpokeDot extends SpokeMember{
-    /**
-     * @type {number} value 
-     */
-    dot_value;
+    
 
     /**
      * @param {number} value 
@@ -123,12 +125,6 @@ class SpokeDot extends SpokeMember{
         this.dot_value = parseInt(value.toString());
     }
 
-     /**
-     * @return {number}
-     */
-     get value() {
-        return this.dot_value;
-    }
 }
 
 class SpokeHarmony extends SpokeMember {
@@ -154,6 +150,7 @@ class SpokeHarmony extends SpokeMember {
         for(let k = 0; k < members.length; k++) {
             this.add_member(members[k]);
         }
+
     }
 
     /**
@@ -169,6 +166,8 @@ class SpokeHarmony extends SpokeMember {
         if (!child?.parent_guids.includes(this.guid)) {
             child?.parent_guids.push(this.guid);
         }
+
+        this.dot_value = SpokeHarmony.#get_value(this.members,this.guid);
     }
 
     /**
@@ -190,6 +189,8 @@ class SpokeHarmony extends SpokeMember {
                 child.parent_guids.splice(parent_index, 1);
             }
         }
+
+        this.dot_value = SpokeHarmony.#get_value(this.members,this.guid);
     }
 
     #clear_all_members() {
@@ -197,13 +198,6 @@ class SpokeHarmony extends SpokeMember {
             let member_guid = this.members[k];
             this.#remove_member(member_guid);
         }
-    }
-
-    /**
-     * @return {number}
-     */
-    get value() {
-        return SpokeHarmony.#get_value(this.members,this.guid);
     }
 
    
@@ -256,26 +250,31 @@ class SpokeHarmony extends SpokeMember {
         return ret; //return best fit, or none
     }
 
+
     /**
     * builds a collection of this object and all parents and ancestors  
     * 
     * @param {string} some_guid
     * @param {?string} [context]
-    * @return {Object<string,SpokeHarmony>} 
+    * @param {?number} [max_level]
+    * @return {Object<string,SpokeHarmonyDistance>} 
     */
-    static #find_all_ancestors(some_guid, context) {
+    static #find_all_ancestors(some_guid, context,max_level) {
       // @ts-ignore
-      return SpokeHarmony.#find_all_ancestors_or_descendants(some_guid,context,'parent_guids');
+      return SpokeHarmony.#find_all_ancestors_or_descendants(some_guid,context,'parent_guids',max_level);
     }
 
      /**
     * builds a collection of this object and all children and descenants 
     * 
     * @param {string} some_guid
-    * @return {Object<string,SpokeMember>} 
+    * @param {?string} [not_include_this_guid]
+    * @param {?number} [max_level]
+    * @return {Object<string,SpokeHarmonyDistance>} 
     */
-     static find_all_descendants(some_guid) {
-        return SpokeHarmony.#find_all_ancestors_or_descendants(some_guid,null,'members');
+     static find_all_descendants(some_guid,not_include_this_guid,max_level) {
+        if (!not_include_this_guid) {not_include_this_guid = null;}
+        return SpokeHarmony.#find_all_ancestors_or_descendants(some_guid,not_include_this_guid,'members',max_level);
       }
 
    /**
@@ -284,10 +283,20 @@ class SpokeHarmony extends SpokeMember {
     * @param {string} some_guid
     * @param {?string} context
     * @param {string} search_type parent_guids|members 
-    * @return {Object<string,SpokeMember>} 
+    * @param {?number} [max_level]
+    * @param {?number} [current_level]
+    * @return {Object<string,SpokeHarmonyDistance>} 
     */
-   static #find_all_ancestors_or_descendants(some_guid, context,search_type) {
+   static #find_all_ancestors_or_descendants(some_guid, context,search_type,max_level,current_level) {
     if (!some_guid ) {return {};}
+    if (!max_level) {max_level = null;}
+    if (!current_level) {current_level = 0;}
+    current_level++;
+    if (max_level && max_level > 0) {
+        if (current_level > max_level) {
+            return {};
+        }
+    }
     if(! ['parent_guids','members'].includes(search_type) ) {
         throw new Error("search type has to be 'parent_guids','members'")
     }
@@ -295,20 +304,20 @@ class SpokeHarmony extends SpokeMember {
     let some_obj = SpokeMaster.master.book.getObject(some_guid);
     
     /**
-     * @type {Object<string,SpokeMember>} ret;
+     * @type {Object<string,SpokeHarmonyDistance>} ret;
      */
     let ret = {};
     if (!context || context !== some_obj.guid) {
-     ret[some_obj.guid] = some_obj;
+     ret[some_obj.guid] = new SpokeHarmonyDistance(some_obj,current_level);
     }
     
     if (!some_obj[search_type]?.length) {return ret;}
 
-    ret[some_obj.guid] = some_obj; 
+    ret[some_obj.guid] = new SpokeHarmonyDistance(some_obj,current_level); 
     for(let i = 0; i < some_obj[search_type].length; i++) {
         let working_guid = some_obj[search_type][i];
         if (working_guid in ret) { continue;}
-        let maybe_paths = SpokeHarmony.#find_all_ancestors_or_descendants(working_guid,context,search_type) ;
+        let maybe_paths = SpokeHarmony.#find_all_ancestors_or_descendants(working_guid,context,search_type,max_level,current_level) ;
         Object.assign(ret,maybe_paths);
     }
     return ret;
@@ -328,11 +337,15 @@ class SpokeHarmony extends SpokeMember {
      */
     static #get_included_harmonies(target_guid,context_guid) {
 
-        //todo I am pretty sure this allows cyclable relationships, if so need to figure out how to find such things
+        //TODO: I am pretty sure this allows cyclable relationships, if so need to figure out how to find such things
         if (!target_guid) {return [];}
         let items = [];
         let remembered_guid_in_items = [];
 
+        /**
+         * 
+         * @param {string} some_guid 
+         */
         function add_guid_to_items(some_guid) {
             let ans = SpokeHarmony.#find_all_ancestors(some_guid) ;
         
@@ -351,14 +364,14 @@ class SpokeHarmony extends SpokeMember {
         
 
         /**
-         * @param {Object<string,SpokeHarmony> } wans 
+         * @param {Object<string,SpokeHarmonyDistance> } wans 
          */
         function push_tree_item(wans) {
             for(let guid in wans) {
                 let h = wans[guid]??null;
                 if (!h) {continue;}
-                for(let pi = 0; pi < h.parent_guids.length; pi++ ) {
-                    let some_parent_guid = h.parent_guids[pi];
+                for(let pi = 0; pi < h.harmony.parent_guids.length; pi++ ) {
+                    let some_parent_guid = h.harmony.parent_guids[pi];
                     if (!remembered_guid_in_items.includes(guid)) {
                         let item = {
                             guid: guid,
@@ -371,7 +384,7 @@ class SpokeHarmony extends SpokeMember {
                         push_tree_item(memories);
                     }//end if not included before
                 }// end for each parent of each ancestor 
-                if (h.parent_guids.length === 0) {
+                if (h.harmony.parent_guids.length === 0) {
                     if (!remembered_guid_in_items.includes(guid)) {
                         let item = {
                             guid: guid,
@@ -520,47 +533,95 @@ class SpokeHarmony extends SpokeMember {
         if (! (n instanceof SpokeDot || n instanceof SpokeHarmony )) {
             throw new Error(`the guid ${guid} is incorrect object when added to ${this.guid}`);
         }
-        //cannot add something that already has this as parent or ancestor
-        let loop_check = SpokeHarmony.#get_included_harmonies(guid,this.guid);
-        if (loop_check.length > 0) {
-            throw new Error(`cannot add this guid ${guid} because it or a child already is in a chain including this ${this.guid}`);
+        //cannot add something that already has this in descents somewhere
+        let loop_check = SpokeHarmony.find_all_descendants(this.guid,this.guid);
+        if (Object.keys(loop_check).includes(this.guid)) {
+            throw new Error(`cannot add as new member guid ${guid} because we are in a chain including this ${this.guid}`);
+        }
+
+        if (this.members.includes(guid)) {
+            throw new Error(`cannot add as new member guid ${guid} because its already a member of this ${this.guid}`);
         }
     
         
         const powered_members = this.#splash(true);
+
+        /**
+         * @type {SpokeHarmonyDistance[]}
+         */
         let finalists = [];
+
+         /**
+         * @type {Object<string,SpokeHarmonyDistance>}
+         */
+        let candidate_harmonies = {};
+
         let my_guid = this.guid;
         for(let i =0; i < powered_members.length; i++) {
             let some_guid = powered_members[i];
-            let nested = SpokeHarmony.#find_all_ancestors(some_guid,this.guid);
-            let ancestors_other = Object.keys(nested).filter(e=> (e !== my_guid ) );
-            for(let j_guid  of  ancestors_other) {
+            /**
+             * @type {Object<string,SpokeHarmonyDistance>}
+             */
+            let some_ancestors;
+
+             /**
+             * @type {Object<string,SpokeHarmonyDistance>}
+             */
+             let some_children;
+
+             /**
+             * @type {Object<string,SpokeHarmonyDistance>}
+             */
+             let nested = {};
+            
+            some_ancestors = SpokeHarmony.#find_all_ancestors(some_guid,null,2);
+            some_children = SpokeHarmony.find_all_descendants(some_guid,null,2);
+            
+            Object.assign(nested,some_ancestors, some_children);
+            let candidate_harmonies_guids = Object.keys(nested)
+                                                    .filter(e=> ((e !== my_guid )) && (nested[e].harmony instanceof SpokeHarmony) );
+        
+            for (const guid_you of candidate_harmonies_guids) {
+                candidate_harmonies[guid_you] = nested[guid_you];
+            }
+        } //end each powered member
+
+        for(let j_guid  in  candidate_harmonies) {
                 
-                let nested_obj = nested[j_guid];
-                if (nested_obj.value * n.value < 0) {
-                    if (!nested_obj.members.includes(n.guid)) {
-                        finalists.push(nested_obj);
-                    }
+            let nested_obj = candidate_harmonies[j_guid];
+            if (nested_obj.harmony.value * n.value < 0) {
+                // @ts-ignore
+                if (!nested_obj.harmony.members.includes(n.guid)) {
+                    finalists.push(nested_obj);
                 }
             }
-        } 
-        if (!this.members.includes(n.guid)) {
-            finalists.push(this);
         }
 
-        if (!finalists.length) {
-            throw new Error(`the guid ${guid} already belongs to ${this.guid} and any possible connects`);
+        finalists.push(new SpokeHarmonyDistance(this,0));
+        
+        /**
+         * 
+         * @param {SpokeHarmonyDistance} a 
+         * @return {number}
+         */
+        function calc_charge_distance(a) {
+            return Math.abs(a.harmony.value + n.value) + Math.abs(a.distance);    
         }
+
         //sort finalist array by how close to 0 each value to the new addition is
         //because only values that are opposite are considered, then  the smallest number will always closest to zero
-        finalists.sort((a, b) => (Math.abs(a.value + n.value) > Math.abs(b.value + n.value)) ? 1 : -1)
-        let lowest_value = finalists[0].value;
-        let ultra_finalist = finalists.filter(e=> (e.value === lowest_value ));
+        finalists.sort((a, b) => (
+            calc_charge_distance(a) > calc_charge_distance(b)
+            ) 
+            ? 1 : -1
+        );
+        let lowest_value = calc_charge_distance(finalists[0]);
+        let ultra_finalist = finalists.filter(e=> (calc_charge_distance(e) === lowest_value ));
         //pick one of the lowest
         let winner = ultra_finalist[Math.floor(Math.random() * ultra_finalist.length)];
-        winner.add_member(n.guid);
-        let best_set = SpokeHarmony.#find_best_set(winner.members,guid,winner.guid);
-        winner.#maybe_create_add_harmony(best_set);
+        winner.harmony.add_member(n.guid);
+        let best_set = SpokeHarmony.#find_best_set(winner.harmony.members,guid,winner.harmony.guid);
+        winner.harmony.#maybe_create_add_harmony(best_set);
        
     }
 
@@ -573,6 +634,30 @@ class SpokeHarmony extends SpokeMember {
     }
 
    
+}
+
+class SpokeHarmonyDistance {
+    /**
+     * @type {SpokeHarmony} 
+     */
+    harmony;
+
+    /**
+     * @type {number} 
+     */
+    distance;
+
+    /**
+     * 
+     * @param {SpokeHarmony|SpokeDot|SpokeMember} harmony 
+     * @param {number} distance 
+     */
+    constructor(harmony,distance) {
+        // @ts-ignore
+        this.harmony = harmony;
+        this.distance = distance;
+    }
+
 }
 
 class SpokeSimpleDraw {
