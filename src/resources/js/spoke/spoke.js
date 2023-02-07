@@ -461,7 +461,7 @@ class SpokeHarmony extends SpokeMember {
      #maybe_create_add_harmony(its_members) {
         if (!its_members || its_members.length === 0) {return;}
         let equals_members = its_members.every((item)=>this.members.includes(item))
-        if (equals_members) {return;} //same child list, so its in general pop
+        if (equals_members && this.members.length === its_members.length) {return;} //same child list, so its in general pop
         let nu = new SpokeHarmony(its_members,this.guid);
         this.add_member(nu.guid);
         //remove set members from the top
@@ -534,7 +534,7 @@ class SpokeHarmony extends SpokeMember {
             throw new Error(`the guid ${guid} is incorrect object when added to ${this.guid}`);
         }
         //cannot add something that already has this in descents somewhere
-        let loop_check = SpokeHarmony.find_all_descendants(this.guid,this.guid);
+        let loop_check = SpokeHarmony.find_all_descendants(n.guid,this.guid);
         if (Object.keys(loop_check).includes(this.guid)) {
             throw new Error(`cannot add as new member guid ${guid} because we are in a chain including this ${this.guid}`);
         }
@@ -605,6 +605,7 @@ class SpokeHarmony extends SpokeMember {
          * @return {number}
          */
         function calc_charge_distance(a) {
+            //TODO: distance is logrithmic in calc
             return Math.abs(a.harmony.value + n.value) + Math.abs(a.distance);    
         }
 

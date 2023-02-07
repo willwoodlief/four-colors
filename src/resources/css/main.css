@@ -43,20 +43,25 @@ div.spoke-display-area {
     background-color: var(--dots-bg-spoke-display-area);
     padding: 1rem;
     width: fit-content;
+    max-width: 100%;
     height: fit-content;
     border: 1px solid forestgreen;
+    display: block;
 }
 
 .spoke-simple-draw-area .spoke-simple-draw-harmony {
     padding: 0.25rem;
     color: skyblue;
     padding: 0.5rem;
+    margin: 0.125rem;
     border: 1px blue dashed;
+    display: inline-block;
 
 }
 
 .spoke-simple-draw-area  .spoke-simple-draw-dot {
     width: fit-content;
+    height: fit-content;
     color: white;
     background-color: black;
     text-align: center;
