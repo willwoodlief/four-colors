@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "Stuff",
   "main": "index.html",
-  "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
+    "@types/jquery": "^3.5.16"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

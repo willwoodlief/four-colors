@@ -6,13 +6,10 @@ class SpokeActions {
      * @param {SpokeMember} member 
      */
     static delete_member_from_all_parents(member) {
-        for (const parent_guid of member.parent_guids) {
-            let parent = SpokeMaster.master.book.getObject(parent_guid);
-            if (!(parent instanceof SpokeHarmony)) {
-                continue;
-            }
-            parent.remove(member.guid);
+        if (member.parent) {
+            member.parent.remove(member.guid);
         }
+        
     }
 
     /**
@@ -38,7 +35,7 @@ class SpokeActions {
         if (!(future_parent instanceof SpokeHarmony)) {
             return;
         }else {
-            if (future_parent.parent_guids.length === 0 && (member instanceof SpokeHarmony)) {
+            if (!future_parent.parent && (member instanceof SpokeHarmony)) {
                 for (const member_guid of member.members) {
                     let thing = SpokeMaster.master.book.getObject(member_guid);
                     future_parent.add_member(thing.guid);

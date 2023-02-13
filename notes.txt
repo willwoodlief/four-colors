@@ -41,3 +41,8 @@ npm i tree-util
 https://browserify.org/
   browserify  node_modules/tree-util/index.js -o src/resources/js/tree-util.js
 
+  --------------------
+  install nodejs on ubuntu 
+  curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
+
